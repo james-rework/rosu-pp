@@ -235,12 +235,16 @@ impl Iterator for OsuGradualDifficultyAttributes {
             mut flashlight,
         } = self.skills.clone();
 
-        let mut aim_rating = aim.difficulty_value().sqrt() * DIFFICULTY_MULTIPLIER;
+        let aim_difficult_strain_count = aim.count_difficult_strains();
+        let mut aim_rating = OsuStrainSkill::difficulty_value(&mut aim).sqrt() * DIFFICULTY_MULTIPLIER;
         let aim_rating_no_sliders =
-            aim_no_sliders.difficulty_value().sqrt() * DIFFICULTY_MULTIPLIER;
+            OsuStrainSkill::difficulty_value(&mut aim_no_sliders).sqrt() * DIFFICULTY_MULTIPLIER;
 
         let speed_notes = speed.relevant_note_count();
-        let mut speed_rating = speed.difficulty_value().sqrt() * DIFFICULTY_MULTIPLIER;
+        let speed_difficult_strain_count = speed.count_difficult_strains();
+        let mut speed_rating = OsuStrainSkill::difficulty_value(&mut speed).sqrt() * DIFFICULTY_MULTIPLIER;
+
+        let mut flashlight_rating = OsuStrainSkill::difficulty_value(&mut flashlight).sqrt() * DIFFICULTY_MULTIPLIER;
 
         let mut flashlight_rating = flashlight.difficulty_value().sqrt() * DIFFICULTY_MULTIPLIER;
 
@@ -291,6 +295,8 @@ impl Iterator for OsuGradualDifficultyAttributes {
         attrs.slider_factor = slider_factor;
         attrs.stars = star_rating;
         attrs.speed_note_count = speed_notes;
+        attrs.speed_difficult_strain_count = speed_difficult_strain_count;
+        attrs.aim_difficult_strain_count = aim_difficult_strain_count;
 
         Some(attrs)
     }
