@@ -15,7 +15,7 @@ pub(crate) struct Aim {
 }
 
 impl Aim {
-    const SKILL_MULTIPLIER: f64 = 23.55;
+    const SKILL_MULTIPLIER: f64 = 24.55;
     const STRAIN_DECAY_BASE: f64 = 0.15;
 
     pub(crate) fn new(with_sliders: bool) -> Self {
@@ -107,8 +107,8 @@ struct AimEvaluator;
 
 impl AimEvaluator {
     const WIDE_ANGLE_MULTIPLIER: f64 = 1.5;
-    const ACUTE_ANGLE_MULTIPLIER: f64 = 1.95;
-    const SLIDER_MULTIPLIER: f64 = 1.35;
+    const ACUTE_ANGLE_MULTIPLIER: f64 = 1.85;
+    const SLIDER_MULTIPLIER: f64 = 1.00;
     const VELOCITY_CHANGE_MULTIPLIER: f64 = 0.75;
 
     fn evaluate_diff_of(
