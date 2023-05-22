@@ -208,7 +208,7 @@ impl<'map> OsuStars<'map> {
             aim_no_sliders,
             speed,
             flashlight,
-            reading,
+            ..
         } = skills;
 
         OsuStrains {

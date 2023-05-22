@@ -107,7 +107,7 @@ impl ReadingEvaluator {
         let mut current_time_gap = 0.0;
 
         while current_time_gap < TIME_LIMIT {  
-            let loop_obj = previous(diff_objects, current.idx, 0);
+            let loop_obj = previous(diff_objects, current.idx, index);
             if loop_obj.is_none() {
                 break;
             }
