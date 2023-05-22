@@ -16,7 +16,7 @@ pub(crate) struct Speed {
 }
 
 impl Speed {
-    const SKILL_MULTIPLIER: f64 = 1375.0;
+    const SKILL_MULTIPLIER: f64 = 1350.0;
     const STRAIN_DECAY_BASE: f64 = 0.3;
 
     pub(crate) fn new(hit_window: f64) -> Self {
@@ -187,7 +187,7 @@ struct RhythmEvaluator;
 impl RhythmEvaluator {
     // * 5 seconds of calculatingRhythmBonus max.
     const HISTORY_TIME_MAX: u32 = 5000;
-    const RHYTHM_MULTIPLIER: f64 = 0.75;
+    const RHYTHM_MULTIPLIER: f64 = 0.65;
 
     fn evaluate_diff_of(
         curr: &OsuDifficultyObject<'_>,
