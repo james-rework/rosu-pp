@@ -11,6 +11,7 @@ pub(crate) struct Flashlight {
     curr_section_peak: f64,
     curr_section_end: f64,
     pub(crate) strain_peaks: Vec<f64>,
+    object_strains: Vec<f64>,
     has_hidden_mod: bool,
     scaling_factor: f64,
     time_preempt: f64,
@@ -27,6 +28,7 @@ impl Flashlight {
             curr_section_peak: 0.0,
             curr_section_end: 0.0,
             strain_peaks: Vec::new(),
+            object_strains: Vec::new(),
             has_hidden_mod: mods.hd(),
             scaling_factor: 52.0 / radius as f64,
             time_preempt,
@@ -105,6 +107,10 @@ impl StrainSkill for Flashlight {
     #[inline]
     fn difficulty_value(&mut self) -> f64 {
         self.get_curr_strain_peaks().into_iter().sum::<f64>() * Self::DIFFICULTY_MULTIPLER
+    }
+
+    fn get_object_strains(&mut self) -> &mut Vec<f64> {
+        &mut self.object_strains
     }
 }
 

@@ -534,12 +534,8 @@ impl OsuPpInner {
 
         speed_value *= len_bonus;
 
-        // * Penalize misses by assessing # of misses relative to the total # of objects.
-        // * Default a 3% reduction for any # of misses.
         if self.effective_miss_count > 0.0 {
-            speed_value *= 0.97
-                * (1.0 - (self.effective_miss_count / total_hits).powf(0.775))
-                    .powf(self.effective_miss_count.powf(0.875));
+            speed_value *= calculate_miss_penalty(self.effective_miss_count, self.attrs.speed_difficult_strain_count);
         }
 
         speed_value *= self.get_combo_scaling_factor();
@@ -676,6 +672,13 @@ impl OsuPpInner {
     fn total_hits(&self) -> f64 {
         self.state.total_hits() as f64
     }
+}
+
+fn calculate_miss_penalty(miss_count: f64, difficult_strain_count: f64) -> f64 {
+    // * Miss penalty assumes that a player will miss on the hardest parts of a map,
+    // * so we use the amount of relatively difficult sections to adjust miss penalty
+    // * to make it more punishing on maps with lower amount of hard sections.
+    0.94 / ((miss_count / 2.0 * difficult_strain_count.sqrt()) + 1.0)
 }
 
 fn calculate_effective_misses(attrs: &OsuDifficultyAttributes, state: &OsuScoreState) -> f64 {

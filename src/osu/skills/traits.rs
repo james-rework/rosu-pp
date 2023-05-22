@@ -83,6 +83,8 @@ pub(crate) trait StrainSkill: Skill + Sized {
 
         strain_peaks
     }
+
+    fn get_object_strains(&mut self) -> &mut Vec<f64>;
 }
 
 pub(crate) trait OsuStrainSkill: StrainSkill + Sized {
@@ -124,5 +126,17 @@ pub(crate) trait OsuStrainSkill: StrainSkill + Sized {
         }
 
         difficulty * Self::DIFFICULTY_MULTIPLER
+    }
+
+    fn count_difficult_strains(&mut self) -> f64 {
+        let strains = self.get_object_strains();
+
+        let top_strain = strains.iter().fold(f64::NAN, |x, y| x.max(*y));
+
+        let difficult_strains: Vec<f64> = strains.iter_mut().map(|s| {
+            (*s / top_strain).powf(4.0)
+        }).collect();
+
+        return difficult_strains.iter().fold(0.0, |sum, &val| sum + val);
     }
 }

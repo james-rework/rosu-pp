@@ -113,6 +113,10 @@ impl StrainSkill for Speed {
     fn difficulty_value(&mut self) -> f64 {
         <Self as OsuStrainSkill>::difficulty_value(self)
     }
+
+    fn get_object_strains(&mut self) -> &mut Vec<f64> {
+        &mut self.object_strains
+    }
 }
 
 impl OsuStrainSkill for Speed {
