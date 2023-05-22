@@ -34,7 +34,16 @@ impl Skill for Reading {
     }
 
     fn difficulty_value(&mut self) -> f64 {
-        todo!()
+        let mut difficulty = 0.0;
+
+        let mut peaks: Vec<f64> = self.difficulties.iter().filter(|&&x| x > 0.0).map(|x| *x).collect();
+        peaks.sort_by(|a, b| b.partial_cmp(a).unwrap());
+
+        for i in 0..peaks.len() {
+            difficulty += peaks[i] / (i as f64 + 1.0);
+        }
+
+        difficulty
     }
 }
 
