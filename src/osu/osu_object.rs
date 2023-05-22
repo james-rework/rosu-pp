@@ -24,6 +24,10 @@ pub struct OsuObject {
     pub stack_height: f32,
     /// Type of the object.
     pub kind: OsuObjectKind,
+    /// Preempt time of the object.
+    pub time_preempt: f64,
+    /// Fade in time of the object.
+    pub time_fade_in: f64,
 }
 
 /// The type of an [`OsuObject`].
@@ -117,6 +121,8 @@ pub(crate) struct ObjectParameters<'a> {
     pub(crate) attrs: &'a mut OsuDifficultyAttributes,
     pub(crate) ticks: Vec<(Pos2, f64)>,
     pub(crate) curve_bufs: CurveBuffers,
+    pub(crate) time_preempt: f64,
+    pub(crate) time_fade_in: f64,
 }
 
 impl OsuObject {
@@ -126,6 +132,8 @@ impl OsuObject {
             attrs,
             ticks,
             curve_bufs,
+            time_preempt,
+            time_fade_in,
         } = params;
 
         attrs.max_combo += 1; // hitcircle, slider head, or spinner
@@ -141,6 +149,8 @@ impl OsuObject {
                     stack_offset: Pos2::default(),
                     stack_height: 0.0,
                     kind: OsuObjectKind::Circle,
+                    time_preempt: *time_preempt,
+                    time_fade_in: *time_fade_in,
                 }
             }
             HitObjectKind::Slider {
@@ -328,6 +338,8 @@ impl OsuObject {
                     stack_offset: Pos2::default(),
                     stack_height: 0.0,
                     kind: OsuObjectKind::Slider(slider),
+                    time_preempt: *time_preempt,
+                    time_fade_in: *time_fade_in,
                 }
             }
             HitObjectKind::Spinner { end_time } | HitObjectKind::Hold { end_time } => {
@@ -341,6 +353,8 @@ impl OsuObject {
                     kind: OsuObjectKind::Spinner {
                         end_time: *end_time,
                     },
+                    time_preempt: *time_preempt,
+                    time_fade_in: *time_fade_in,
                 }
             }
         }

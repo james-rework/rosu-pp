@@ -10,7 +10,7 @@ use crate::{curve::CurveBuffers, parse::Pos2, AnyStars, Beatmap, GameMode, Mods}
 
 use self::{
     difficulty_object::{Distances, OsuDifficultyObject},
-    skills::{Skills, OsuStrainSkill},
+    skills::{Skills, OsuStrainSkill, Skill},
 };
 
 pub use self::{gradual_difficulty::*, gradual_performance::*, osu_object::*, pp::*};
@@ -123,6 +123,7 @@ impl<'map> OsuStars<'map> {
             mut aim_no_sliders,
             mut speed,
             mut flashlight,
+            mut reading,
         } = skills;
 
         let aim_difficult_strain_count = aim.count_difficult_strains();
@@ -136,6 +137,8 @@ impl<'map> OsuStars<'map> {
 
         let mut flashlight_rating = OsuStrainSkill::difficulty_value(&mut flashlight).sqrt() * DIFFICULTY_MULTIPLIER;
 
+        let mut reading_rating = Skill::difficulty_value(&mut reading).sqrt() * DIFFICULTY_MULTIPLIER;
+
         let slider_factor = if aim_rating > 0.0 {
             aim_rating_no_sliders / aim_rating
         } else {
@@ -145,6 +148,7 @@ impl<'map> OsuStars<'map> {
         if mods.td() {
             aim_rating = aim_rating.powf(0.8);
             flashlight_rating = flashlight_rating.powf(0.8);
+            reading_rating = reading_rating.powf(0.8);
         }
 
         if mods.rx() {
@@ -163,9 +167,12 @@ impl<'map> OsuStars<'map> {
             0.0
         };
 
+        let base_reading_performance = (5.0 * (reading_rating / 0.0675).max(1.0) - 4.0).powi(3) / 100_000.0;
+
         let base_performance = ((base_aim_performance).powf(1.1)
             + (base_speed_performance).powf(1.1)
-            + (base_flashlight_performance).powf(1.1))
+            + (base_flashlight_performance).powf(1.1)
+            + (base_reading_performance).powf(1.1))
         .powf(1.0 / 1.1);
 
         let star_rating = if base_performance > 0.00001 {
@@ -179,6 +186,7 @@ impl<'map> OsuStars<'map> {
         attrs.aim = aim_rating;
         attrs.speed = speed_rating;
         attrs.flashlight = flashlight_rating;
+        attrs.reading = reading_rating;
         attrs.slider_factor = slider_factor;
         attrs.stars = star_rating;
         attrs.speed_note_count = speed_notes;
@@ -200,6 +208,7 @@ impl<'map> OsuStars<'map> {
             aim_no_sliders,
             speed,
             flashlight,
+            reading,
         } = skills;
 
         OsuStrains {
@@ -276,7 +285,7 @@ fn calculate_skills(params: OsuStars<'_>) -> (Skills, OsuDifficultyAttributes) {
     };
 
     let mut hit_objects =
-        create_osu_objects(map, &mut attrs, &scaling_factor, take, hr, time_preempt);
+        create_osu_objects(map, &mut attrs, &scaling_factor, take, hr, time_preempt, time_fade_in);
     let mut hit_objects_iter = hit_objects.iter_mut();
 
     let mut skills = Skills::new(
@@ -336,12 +345,15 @@ pub(crate) fn create_osu_objects(
     take: usize,
     hr: bool,
     time_preempt: f64,
+    time_fade_in: f64,
 ) -> Vec<OsuObject> {
     let mut params = ObjectParameters {
         map,
         attrs,
         ticks: Vec::new(),
         curve_bufs: CurveBuffers::default(),
+        time_preempt,
+        time_fade_in,
     };
 
     let mut hit_objects: Vec<_> = map
@@ -525,6 +537,8 @@ pub struct OsuDifficultyAttributes {
     pub speed: f64,
     /// The flashlight portion of the total strain.
     pub flashlight: f64,
+    /// The reading portion of the total strain.
+    pub reading: f64,
     /// The ratio of the aim strain with and without considering sliders
     pub slider_factor: f64,
     /// The number of clickable objects weighted by difficulty.
@@ -574,6 +588,8 @@ pub struct OsuPerformanceAttributes {
     pub pp_flashlight: f64,
     /// The speed portion of the final pp.
     pub pp_speed: f64,
+    /// The reading portion of the final pp.
+    pub pp_reading: f64,
     /// Misses including an approximated amount of slider breaks
     pub effective_miss_count: f64,
 }

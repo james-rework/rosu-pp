@@ -10,7 +10,7 @@ use super::{
     old_stacking,
     osu_object::{ObjectParameters, OsuObject, OsuObjectKind},
     scaling_factor::ScalingFactor,
-    skills::{Skill, Skills},
+    skills::{Skill, Skills, OsuStrainSkill},
     stacking, OsuDifficultyAttributes, DIFFICULTY_MULTIPLIER, FADE_IN_DURATION_MULTIPLIER,
     PERFORMANCE_BASE_MULTIPLIER, PREEMPT_MIN,
 };
@@ -104,6 +104,8 @@ impl OsuGradualDifficultyAttributes {
             attrs: &mut attrs,
             ticks: Vec::new(),
             curve_bufs: CurveBuffers::default(),
+            time_preempt,
+            time_fade_in,
         };
 
         let mut hit_objects: Vec<_> = map
@@ -233,6 +235,7 @@ impl Iterator for OsuGradualDifficultyAttributes {
             mut aim_no_sliders,
             mut speed,
             mut flashlight,
+            mut reading,
         } = self.skills.clone();
 
         let aim_difficult_strain_count = aim.count_difficult_strains();
@@ -246,7 +249,7 @@ impl Iterator for OsuGradualDifficultyAttributes {
 
         let mut flashlight_rating = OsuStrainSkill::difficulty_value(&mut flashlight).sqrt() * DIFFICULTY_MULTIPLIER;
 
-        let mut flashlight_rating = flashlight.difficulty_value().sqrt() * DIFFICULTY_MULTIPLIER;
+        let mut reading_rating = reading.difficulty_value().sqrt() * DIFFICULTY_MULTIPLIER;
 
         let slider_factor = if aim_rating > 0.0 {
             aim_rating_no_sliders / aim_rating
@@ -257,6 +260,7 @@ impl Iterator for OsuGradualDifficultyAttributes {
         if self.mods.td() {
             aim_rating = aim_rating.powf(0.8);
             flashlight_rating = flashlight_rating.powf(0.8);
+            reading_rating = reading_rating.powf(0.8);
         }
 
         if self.mods.rx() {
@@ -275,9 +279,12 @@ impl Iterator for OsuGradualDifficultyAttributes {
             0.0
         };
 
+        let base_reading_performance = (5.0 * (reading_rating / 0.0675).max(1.0) - 4.0).powi(3) / 100_000.0;
+
         let base_performance = ((base_aim_performance).powf(1.1)
             + (base_speed_performance).powf(1.1)
-            + (base_flashlight_performance).powf(1.1))
+            + (base_flashlight_performance).powf(1.1)
+            + (base_reading_performance).powf(1.1))
         .powf(1.0 / 1.1);
 
         let star_rating = if base_performance > 0.00001 {
@@ -292,6 +299,7 @@ impl Iterator for OsuGradualDifficultyAttributes {
         attrs.aim = aim_rating;
         attrs.speed = speed_rating;
         attrs.flashlight = flashlight_rating;
+        attrs.reading = reading_rating;
         attrs.slider_factor = slider_factor;
         attrs.stars = star_rating;
         attrs.speed_note_count = speed_notes;

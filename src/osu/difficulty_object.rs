@@ -13,6 +13,7 @@ pub(crate) struct OsuDifficultyObject<'h> {
     pub(crate) strain_time: f64,
     pub(crate) dists: Distances,
     pub(crate) idx: usize,
+    pub(crate) preempt: f64,
 }
 
 impl<'h> OsuDifficultyObject<'h> {
@@ -31,6 +32,8 @@ impl<'h> OsuDifficultyObject<'h> {
         // * Capped to 25ms to prevent difficulty calculation breaking from simultaneous objects.
         let strain_time = delta_time.max(Self::MIN_DELTA_TIME as f64);
 
+        let preempt = base.time_preempt / clock_rate;
+
         Self {
             start_time,
             delta_time,
@@ -38,6 +41,7 @@ impl<'h> OsuDifficultyObject<'h> {
             strain_time,
             dists,
             idx,
+            preempt,
         }
     }
 

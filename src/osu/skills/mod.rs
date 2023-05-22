@@ -2,6 +2,7 @@ mod aim;
 mod flashlight;
 mod speed;
 mod traits;
+mod reading;
 
 use crate::osu::difficulty_object::OsuDifficultyObject;
 
@@ -9,6 +10,7 @@ pub(crate) use self::{
     aim::Aim,
     flashlight::Flashlight,
     speed::Speed,
+    reading::Reading,
     traits::{OsuStrainSkill, Skill, StrainSkill},
 };
 
@@ -18,6 +20,7 @@ pub(crate) struct Skills {
     pub aim_no_sliders: Aim,
     pub speed: Speed,
     pub flashlight: Flashlight,
+    pub reading: Reading,
 }
 
 impl Skills {
@@ -33,6 +36,7 @@ impl Skills {
             aim_no_sliders: Aim::new(false),
             speed: Speed::new(hit_window),
             flashlight: Flashlight::new(mods, radius, time_preempt, time_fade_in),
+            reading: Reading::new(mods, time_preempt, time_fade_in),
         }
     }
 
@@ -45,6 +49,7 @@ impl Skills {
         <Aim as Skill>::process(&mut self.aim_no_sliders, curr, diff_objects);
         <Speed as Skill>::process(&mut self.speed, curr, diff_objects);
         <Flashlight as Skill>::process(&mut self.flashlight, curr, diff_objects);
+        <Reading as Skill>::process(&mut self.reading, curr, diff_objects);
     }
 }
 

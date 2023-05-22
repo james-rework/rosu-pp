@@ -438,11 +438,13 @@ impl OsuPpInner {
         let speed_value = self.compute_speed_value();
         let acc_value = self.compute_accuracy_value();
         let flashlight_value = self.compute_flashlight_value();
+        let reading_value = self.compute_reading_value();
 
         let pp = (aim_value.powf(1.1)
             + speed_value.powf(1.1)
             + acc_value.powf(1.1)
-            + flashlight_value.powf(1.1))
+            + flashlight_value.powf(1.1)
+            + reading_value.powf(1.1))
         .powf(1.0 / 1.1)
             * multiplier;
 
@@ -452,6 +454,7 @@ impl OsuPpInner {
             pp_aim: aim_value,
             pp_flashlight: flashlight_value,
             pp_speed: speed_value,
+            pp_reading: reading_value,
             pp,
             effective_miss_count: self.effective_miss_count,
         }
@@ -490,11 +493,6 @@ impl OsuPpInner {
 
         // * Buff for longer maps with high AR.
         aim_value *= 1.0 + ar_factor * len_bonus;
-
-        if self.mods.hd() {
-            // * We want to give more reward for lower AR when it comes to aim and HD. This nerfs high AR and buffs lower AR.
-            aim_value *= 1.0 + 0.04 * (12.0 - self.attrs.ar);
-        }
 
         // * We assume 15% of sliders in a map are difficult since there's no way to tell from the performance calculator.
         let estimate_diff_sliders = self.attrs.n_sliders as f64 * 0.15;
@@ -548,12 +546,6 @@ impl OsuPpInner {
 
         // * Buff for longer maps with high AR.
         speed_value *= 1.0 + ar_factor * len_bonus;
-
-        if self.mods.hd() {
-            // * We want to give more reward for lower AR when it comes to aim and HD.
-            // * This nerfs high AR and buffs lower AR.
-            speed_value *= 1.0 + 0.04 * (12.0 - self.attrs.ar);
-        }
 
         // * Calculate accuracy assuming the worst case scenario
         let relevant_total_diff = total_hits - self.attrs.speed_note_count;
@@ -658,6 +650,21 @@ impl OsuPpInner {
         flashlight_value *= 0.98 + self.attrs.od * self.attrs.od / 2500.0;
 
         flashlight_value
+    }
+
+    fn compute_reading_value(&self) -> f64 {
+        let mut reading_value = self.attrs.reading * self.attrs.reading * 25.0;
+
+        if self.effective_miss_count > 0.0 {
+            reading_value *= calculate_miss_penalty(self.effective_miss_count, self.attrs.speed_difficult_strain_count);
+        }
+
+        // * Scale the reading value with accuracy _harshly_.
+        reading_value *= self.acc * self.acc;
+        // * It is important to also consider accuracy difficulty when doing that.
+        reading_value *= 0.98 + self.attrs.od * self.attrs.od / 2500.0;
+
+        reading_value
     }
 
     fn get_combo_scaling_factor(&self) -> f64 {
